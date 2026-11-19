@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algorithm Explorer – Smart Cargo Packing</title>
+<style>
+:root{--bg:#0b1020;--card:#141b34;--line:#26305a;--text:#e8ecff;--mut:#9aa6d6;--acc:#6c8cff;--acc2:#38e0c0;--bad:#ff6b81;--ok:#38e0a0}
+@media (prefers-color-scheme: light){:root{--bg:#f4f6ff;--card:#fff;--line:#d8def5;--text:#14193a;--mut:#5a6494;--acc:#3b5bdb;--acc2:#0ca38a;--bad:#d6293e;--ok:#0b9a63}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(1000px 500px at 80% -10%,rgba(108,140,255,.18),transparent),var(--bg);color:var(--text);line-height:1.6}
+.wrap{max-width:1000px;margin:auto;padding:0 20px}
+header{padding:56px 0 28px}
+.tag{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);border:1px solid var(--line);padding:4px 12px;border-radius:99px}
+h1{font-size:clamp(32px,6vw,52px);line-height:1.1;margin:14px 0;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 12px;font-size:22px}
+.lead{color:var(--mut);max-width:680px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:20px}
+.card h3{margin:0 0 6px;font-size:16px;color:var(--acc2)}
+.card p{margin:0;color:var(--mut);font-size:14.5px}
+label{font-size:13px;color:var(--mut);display:block;margin-bottom:4px}
+input{width:100%;background:transparent;border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:10px;font-size:14px}
+input:focus{outline:2px solid var(--acc);border-color:transparent}
+.row{display:grid;grid-template-columns:2fr 1fr 1fr 40px;gap:10px;margin-bottom:10px;align-items:end}
+button{cursor:pointer;font:inherit;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text);padding:9px 16px}
+button:hover{border-color:var(--acc)}
+.primary{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#08101f;font-weight:600;border:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+#err{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--bad);color:var(--bad);font-size:14px}
+#err ul{margin:4px 0 0 18px;padding:0}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{padding:10px 18px;border-radius:99px}
+.tab[aria-selected=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.badges{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px 16px}
+.badge small{display:block;color:var(--mut);font-size:12px}
+.badge b{font-family:ui-monospace,Consolas,monospace;font-size:16px}
+ol{padding-left:20px;color:var(--mut)}ol li{margin-bottom:6px}
+.res{border:1px solid var(--line);border-radius:12px;padding:16px;background:rgba(108,140,255,.07)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat{border-radius:10px;border:1px solid var(--line);padding:10px}.stat small{color:var(--mut);display:block;font-size:12px}.stat b{font-size:18px}
+.chip{display:inline-block;margin:4px 6px 0 0;padding:4px 12px;border-radius:99px;background:rgba(56,224,192,.15);color:var(--acc2);font-size:13px}
+.flag{font-size:13px;margin-top:10px}.ok{color:var(--ok)}.warn{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mut);font-weight:500}
+.scroll{overflow-x:auto}
+footer{padding:30px 0 50px;color:var(--mut);font-size:13px;text-align:center}
+@media(max-width:560px){.row{grid-template-columns:1fr 1fr 1fr 36px}.row>div:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="tag">Algorithm Explorer</span>
+  <h1>Smart Cargo Packing</h1>
+  <p class="lead">One real-world problem, four algorithms. Enter your cargo, pick an approach, and compare the answers.</p>
+  <div class="grid3">
+    <div class="card"><h3>What is the problem?</h3><p>The 0/1 Knapsack problem: a truck can carry only a fixed weight. Each parcel has a weight and a value. Each parcel is taken whole or left behind.</p></div>
+    <div class="card"><h3>Why it matters</h3><p>Couriers, airlines, shipping lines and even investors face this daily: getting the most value out of limited space, weight or budget.</p></div>
+    <div class="card"><h3>What we compute</h3><p>The set of parcels that gives the highest total value without going over the weight limit, plus how much work each algorithm did.</p></div>
+  </div>
+</header>
+
+<section class="card">
+  <h2>1. Enter your data</h2>
+  <label for="cap">Truck capacity (kg, whole number)</label>
+  <input id="cap" type="number" min="1" step="1" style="max-width:240px">
+  <div style="height:16px"></div>
+  <div id="rows"></div>
+  <div class="actions">
+    <button id="add">+ Add parcel</button>
+    <button id="sample">Load sample</button>
+    <button class="primary" id="solve">Solve with all 4 algorithms</button>
+  </div>
+  <div id="err" role="alert"></div>
+</section>
+
+<section class="card" id="out" style="display:none">
+  <h2>2. Explore the approaches</h2>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="panel"></div>
+</section>
+
+<section class="card" id="cmpBox" style="display:none">
+  <h2>3. Side-by-side comparison</h2>
+  <div class="scroll"><table id="cmp"></table></div>
+</section>
+<footer>Built for the Algorithm Explorer project · HTML, CSS and vanilla JavaScript</footer>
+</div>
+
+<script>
+// ---------- 1. Describe the four algorithms (text shown to the user) ----------
+const INFO = {
+  brute:{name:"Brute Force",time:"O(2ⁿ · n)",space:"O(n)",
+    steps:["Think of every parcel as a yes/no choice, so n parcels give 2ⁿ possible combinations.",
+      "Generate each combination one by one (using the binary numbers 0 to 2ⁿ−1).",
+      "Add up the weight of the combination. If it is above the capacity, throw it away.",
+      "Otherwise add up its value and keep it if it beats the best value so far.",
+      "After checking every combination, the best one kept is the answer."],
+    note:"Always correct but becomes very slow after about 20 items, so the form limits n to 20."},
+  greedy:{name:"Greedy",time:"O(n log n)",space:"O(n)",
+    steps:["Compute the value-per-kg ratio of every parcel.",
+      "Sort the parcels from the best ratio to the worst.",
+      "Go down the list. If the parcel still fits, load it. Otherwise skip it.",
+      "Stop at the end of the list. You never go back and change a choice."],
+    note:"Very fast, but not always optimal, because a locally good choice can block a better combination."},
+  dp:{name:"Dynamic Programming",time:"O(n · W)",space:"O(n · W)",
+    steps:["Build a table where cell [i][w] = best value using the first i parcels with capacity w.",
+      "For each parcel and capacity, choose the better of: skip the parcel, or take it and add its value to the best result for the remaining capacity.",
+      "Fill the table row by row, re-using earlier answers instead of recomputing them.",
+      "The bottom-right cell is the best value.",
+      "Walk backwards through the table to find which parcels were taken."],
+    note:"Always optimal and fast when the capacity W is a reasonable number."},
+  back:{name:"Backtracking + Pruning",time:"O(2ⁿ) worst case",space:"O(n)",
+    steps:["Go through the parcels in order, trying 'take it' first and then 'skip it'.",
+      "If taking the parcel makes the weight go over the capacity, abandon that path immediately.",
+      "Estimate the best value the path could still reach (filling leftover space with fractions of the remaining parcels).",
+      "If that estimate cannot beat the best answer found so far, prune the path.",
+      "Undo the choice (backtrack) and try the other branch. Continue until all paths are tried or pruned."],
+    note:"Always optimal. Pruning makes it much faster than brute force on most inputs, though the worst case is still exponential."}
+};
+
+// ---------- 2. The algorithms ----------
+// Each takes (items, W) and returns {value, chosen:[indexes], ops}
+function brute(items,W){
+  const n=items.length;let best=0,bestMask=0,ops=0;
+  for(let m=0;m<(1<<n);m++){
+    let w=0,v=0;
+    for(let i=0;i<n;i++){ops++;if(m&(1<<i)){w+=items[i].w;v+=items[i].v}}
+    if(w<=W&&v>best){best=v;bestMask=m}
+  }
+  return{value:best,chosen:items.map((_,i)=>i).filter(i=>bestMask&(1<<i)),ops};
+}
+function greedy(items,W){
+  const order=items.map((_,i)=>i).sort((a,b)=>items[b].v/items[b].w-items[a].v/items[a].w);
+  let w=0,v=0,chosen=[],ops=order.length;
+  for(const i of order){ops++;if(w+items[i].w<=W){w+=items[i].w;v+=items[i].v;chosen.push(i)}}
+  return{value:v,chosen,ops};
+}
+function dp(items,W){
+  const n=items.length;let ops=0;
+  const t=Array.from({length:n+1},()=>new Array(W+1).fill(0));
+  for(let i=1;i<=n;i++)for(let w=0;w<=W;w++){
+    ops++;
+    t[i][w]=t[i-1][w];
+    const it=items[i-1];
+    if(it.w<=w)t[i][w]=Math.max(t[i][w],t[i-1][w-it.w]+it.v);
+  }
+  const chosen=[];let w=W;
+  for(let i=n;i>0;i--)if(t[i][w]!==t[i-1][w]){chosen.push(i-1);w-=items[i-1].w}
+  return{value:t[n][W],chosen:chosen.reverse(),ops};
+}
+function back(items,W){
+  const idx=items.map((_,i)=>i).sort((a,b)=>items[b].v/items[b].w-items[a].v/items[a].w);
+  const s=idx.map(i=>items[i]);const n=s.length;
+  let best=0,bestSet=[],ops=0;
+  function bound(k,w,v){ // optimistic estimate using fractions
+    let room=W-w,b=v;
+    for(let i=k;i<n&&room>0;i++){
+      if(s[i].w<=room){room-=s[i].w;b+=s[i].v}else{b+=s[i].v*room/s[i].w;break}
+    }
+    return b;
+  }
+  function go(k,w,v,set){
+    ops++;
+    if(v>best){best=v;bestSet=set.slice()}
+    if(k===n)return;
+    if(bound(k,w,v)<=best)return;            // prune
+    if(w+s[k].w<=W){set.push(idx[k]);go(k+1,w+s[k].w,v+s[k].v,set);set.pop()} // take
+    go(k+1,w,v,set);                          // skip
+  }
+  go(0,0,0,[]);
+  return{value:best,chosen:bestSet.sort((a,b)=>a-b),ops};
+}
+const RUN={brute,greedy,dp,back};
+
+// ---------- 3. Page logic ----------
+const $=id=>document.getElementById(id);
+let results={},current="brute",lastItems=[],lastW=0;
+
+function addRow(name="",w="",v=""){
+  const d=document.createElement("div");d.className="row";
+  d.innerHTML=`<div><label>Parcel name</label><input class="n" value="${name}" placeholder="e.g. Laptops"></div>
+  <div><label>Weight (kg)</label><input class="w" type="number" min="1" step="1" value="${w}"></div>
+  <div><label>Value (₹)</label><input class="v" type="number" min="0" step="1" value="${v}"></div>
+  <button title="Remove" aria-label="Remove parcel">✕</button>`;
+  d.querySelector("button").onclick=()=>d.remove();
+  $("rows").appendChild(d);
+}
+function loadSample(){
+  $("rows").innerHTML="";$("cap").value=50;
+  [["Laptops",10,60],["Medicines",20,100],["Books",30,120],["Toys",15,45],["Cameras",5,50]].forEach(x=>addRow(...x));
+}
+function readAndValidate(){
+  const errs=[];
+  const W=Number($("cap").value);
+  if($("cap").value===""||!Number.isInteger(W)||W<=0)errs.push("Capacity must be a whole number greater than 0.");
+  if(W>10000)errs.push("Capacity above 10,000 is too large for this demo.");
+  const items=[];
+  document.querySelectorAll("#rows .row").forEach((r,i)=>{
+    const name=r.querySelector(".n").value.trim();
+    const wt=r.querySelector(".w").value,vl=r.querySelector(".v").value;
+    const w=Number(wt),v=Number(vl);let bad=false;
+    if(!name){errs.push(`Parcel ${i+1}: enter a name.`);bad=true}
+    if(wt===""||!Number.isInteger(w)||w<=0){errs.push(`Parcel ${i+1}: weight must be a whole number above 0.`);bad=true}
+    if(vl===""||!Number.isInteger(v)||v<0){errs.push(`Parcel ${i+1}: value must be a whole number, 0 or more.`);bad=true}
+    if(!bad)items.push({name,w,v});
+  });
+  if(!document.querySelectorAll("#rows .row").length)errs.push("Add at least one parcel.");
+  if(document.querySelectorAll("#rows .row").length>20)errs.push("Please use 20 parcels or fewer (brute force would be too slow).");
+  return{errs,items,W};
+}
+function solve(){
+  const{errs,items,W}=readAndValidate(),box=$("err");
+  if(errs.length){box.style.display="block";box.innerHTML="<b>Please fix the following:</b><ul>"+errs.map(e=>`<li>${e}</li>`).join("")+"</ul>";return}
+  box.style.display="none";lastItems=items;lastW=W;results={};
+  for(const k in RUN){
+    const t0=performance.now();const r=RUN[k](items,W);r.ms=performance.now()-t0;
+    r.weight=r.chosen.reduce((s,i)=>s+items[i].w,0);results[k]=r;
+  }
+  $("out").style.display=$("cmpBox").style.display="block";
+  renderTabs();show(current);renderCompare();
+  $("out").scrollIntoView({behavior:"smooth"});
+}
+function renderTabs(){
+  $("tabs").innerHTML="";
+  for(const k in INFO){
+    const b=document.createElement("button");b.className="tab";b.textContent=INFO[k].name;
+    b.setAttribute("role","tab");b.setAttribute("aria-selected",k===current);
+    b.onclick=()=>show(k);$("tabs").appendChild(b);
+  }
+}
+function show(k){
+  current=k;renderTabs();
+  const I=INFO[k],r=results[k],opt=results.dp.value;
+  const optimal=r.value===opt;
+  $("panel").innerHTML=`
+    <h3 style="margin:0 0 6px">How ${I.name} works</h3>
+    <ol>${I.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+    <p style="color:var(--mut);font-size:14px;margin-top:0">${I.note}</p>
+    <div class="badges">
+      <div class="badge"><small>Time complexity</small><b>${I.time}</b></div>
+      <div class="badge"><small>Space complexity</small><b>${I.space}</b></div>
+    </div>
+    <div class="res">
+      <b>Result for your input</b>
+      <div>${r.chosen.length?r.chosen.map(i=>`<span class="chip">${esc(lastItems[i].name)} (${lastItems[i].w} kg, ₹${lastItems[i].v})`+`</span>`).join(""):"<span style='color:var(--mut)'>No parcel fits.</span>"}</div>
+      <div class="stats">
+        <div class="stat"><small>Total value</small><b>₹${r.value}</b></div>
+        <div class="stat"><small>Total weight</small><b>${r.weight} / ${lastW} kg</b></div>
+        <div class="stat"><small>Operations</small><b>${r.ops.toLocaleString()}</b></div>
+        <div class="stat"><small>Time taken</small><b>${r.ms.toFixed(2)} ms</b></div>
+      </div>
+      <div class="flag ${optimal?'ok':'warn'}">${optimal?"✔ This is the optimal answer.":"✘ Not optimal. The best possible value is ₹"+opt+" (found by DP)."}</div>
+    </div>`;
+}
+function renderCompare(){
+  const rows=Object.keys(INFO).map(k=>{const r=results[k];return`<tr><td>${INFO[k].name}</td><td>${INFO[k].time}</td><td>₹${r.value}</td><td>${r.ops.toLocaleString()}</td><td>${r.ms.toFixed(2)} ms</td><td>${r.value===results.dp.value?"Optimal":"Sub-optimal"}</td></tr>`}).join("");
+  $("cmp").innerHTML=`<tr><th>Approach</th><th>Time</th><th>Value</th><th>Operations</th><th>Runtime</th><th>Quality</th></tr>${rows}`;
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+$("add").onclick=()=>addRow();
+$("sample").onclick=loadSample;
+$("solve").onclick=solve;
+loadSample();
+</script>
+</body>
+</html>
